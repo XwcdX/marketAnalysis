@@ -543,9 +543,7 @@ def visualize(chart_type):
                 "error": "Invalid chart type.",
                 "valid_types": ["country", "product", "day", "month", "hour"]
             }), 400
-            
-        image_url = f"C:/DATMIN/Final Project/tmp/{plot_filename}"
-        return jsonify({"image_url": image_url}), 200
+        return jsonify({"image_url": plot_path}), 200
     except Exception as e:
         logging.error(f"Visualization error: {e}")
         return jsonify({"error": str(e)}), 500
@@ -598,9 +596,7 @@ def analyze(analysis_type):
                 "error": "Invalid analysis type.",
                 "valid_types": ["hour", "day", "country"]
             }), 400
-            
-        image_url = f"C:/DATMIN/Final Project/tmp/{plot_filename}"
-        return jsonify({"image_url": image_url}), 200
+        return jsonify({"image_url": plot_path}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
