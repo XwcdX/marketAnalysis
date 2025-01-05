@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 flex justify-center items-center min-h-screen">
+    <div class="bg-white p-8 rounded shadow-md w-full max-w-3xl">
+      <h1 class="text-2xl font-bold mb-6">Market Analysis</h1>
+
+      <!-- Load Dataset -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Load Dataset</h2>
+        <input
+          type="text"
+          id="filePath"
+          placeholder="Enter file path"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="loadButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Load Dataset
+        </button>
+      </div>
+
+      <!-- Preprocess Data -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Preprocess Data</h2>
+        <button
+          id="preprocessButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Preprocess Data
+        </button>
+      </div>
+
+      <!-- Apriori Analysis -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Apriori Analysis</h2>
+        <input
+          type="number"
+          id="minSupport"
+          placeholder="Enter minimum support (default: 0.015)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="aprioriButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Run Apriori Analysis
+        </button>
+        <div id="aprioriResults" class="mt-4"></div>
+      </div>
+
+      <!-- Recommend Products -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Recommend Products</h2>
+        <input
+          type="text"
+          id="products"
+          placeholder="Enter purchased products (comma-separated)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="recommendButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Recommend Products
+        </button>
+        <div id="recommendations" class="mt-4"></div>
+      </div>
+
+      <!-- Visualization -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Visualize Data</h2>
+        <input
+          type="text"
+          id="chartType"
+          placeholder="Enter chart type (country/product/month/day/hour)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="visualizeButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Visualize Data
+        </button>
+        <div id="visualizations" class="mt-4 grid grid-cols-1 gap-4"></div>
+      </div>
+
+      <!-- Train Naive Bayes -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Train Naive Bayes</h2>
+        <button
+          id="trainNBButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Train Naive Bayes
+        </button>
+        <div id="trainNBResults" class="mt-4"></div>
+      </div>
+
+      <!-- Train KNN -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Train KNN</h2>
+        <input
+          type="number"
+          id="nNeighbors"
+          placeholder="Enter number of neighbors (default: 5)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="trainKNNButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Train KNN
+        </button>
+        <div id="trainKNNResults" class="mt-4"></div>
+      </div>
+
+      <!-- Cluster Data -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Cluster Data</h2>
+        <input
+          type="number"
+          id="nCluster"
+          placeholder="Enter number of cluster (default: 3)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="clusterDataButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Cluster Data
+        </button>
+        <div id="clusterDataResults" class="mt-4 max-h-72 overflow-auto"></div>
+      </div>
+
+      <!-- Optimal Cluster -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Optimal Cluster</h2>
+        <input
+          type="text"
+          id="kRangeInput"
+          placeholder="Enter k_range (e.g., 2,3,4,5)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="optimalClusterButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Find Optimal Clusters
+        </button>
+        <div id="optimalClusterResults" class="mt-4"></div>
+      </div>
+
+      <!-- Analysis -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Analysis</h2>
+        <input
+          type="text"
+          id="analysisType"
+          placeholder="Enter analysis type (hour/day/country)"
+          class="w-full p-2 border border-gray-300 rounded mb-2"
+        />
+        <button
+          id="analyzeButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Analyze Data
+        </button>
+        <div id="analyzations" class="mt-4 grid grid-cols-1 gap-4"></div>
+      </div>
+
+      <!-- Cluster Analysis -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Cluster Analysis</h2>
+        <button
+          id="clusterAnalysisButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Perform Cluster Analysis
+        </button>
+        <div id="clusterAnalysisResults" class="mt-4"></div>
+      </div>
+
+      <!-- Cluster Visualization -->
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold mb-2">Cluster Visualization</h2>
+        <button
+          id="visualizeClustersButton"
+          class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Visualize Clusters
+        </button>
+        <div id="visualizeClusters" class="mt-4"></div>
+      </div>
+    </div>
+
+    <script>
+      const apiUrl = "http://localhost:5000";
+
+      async function handleApiRequest(
+        route,
+        method = "GET",
+        body = null,
+        loaderMessage = "Processing..."
+      ) {
+        Swal.fire({
+          title: loaderMessage,
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        try {
+          const response = await fetch(`${apiUrl}${route}`, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: body ? JSON.stringify(body) : null,
+          });
+
+          const data = await response.json();
+          if (!response.ok)
+            throw new Error(data.error || "Unknown error occurred.");
+
+          Swal.close();
+
+          if (route === "/apriori") {
+            displayAprioriResults(data.results);
+          } else if (route === "/recommend") {
+            displayRecomResult(data.recommendations);
+          } else if (route.startsWith("/visualize/")) {
+            displayVisualization(data.image_url);
+          } else if (route === "/train/naive_bayes") {
+            trainNaiveBayes(data);
+          } else if (route === "/train/knn") {
+            trainKNN(data);
+          } else if (route === "/cluster") {
+            displayClusterResults(data.clusters);
+          } else if (route === "/optimal_clusters") {
+            displayOptimalClusterResults(data.image_url);
+          } else if (route.startsWith("/analyze/")) {
+            displayAnalyzation(data.image_url);
+          } else if (route === "/cluster_analysis"){
+            displayClusterAnalysis(data)
+          } else if (route === "/visualize_clusters"){
+            visualizeCluster(data.image_url)
+          } else {
+            Swal.fire(
+              "Success",
+              data.message || JSON.stringify(data),
+              "success"
+            );
+          }
+        } catch (error) {
+          Swal.fire("Error", error.message, "error");
+        }
+      }
+
+      function displayAprioriResults(results) {
+        const resultsContainer = document.getElementById("aprioriResults");
+        if (Array.isArray(results) && results.length > 0) {
+          const tableHtml = `
+            <table class="table-auto w-full border-collapse border border-gray-400">
+              <thead class="bg-gray-200">
+                <tr>
+                  <th class="border border-gray-400 px-4 py-2">Antecedents</th>
+                  <th class="border border-gray-400 px-4 py-2">Consequents</th>
+                  <th class="border border-gray-400 px-4 py-2">Support</th>
+                  <th class="border border-gray-400 px-4 py-2">Confidence</th>
+                  <th class="border border-gray-400 px-4 py-2">Lift</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${results
+                  .map(
+                    (item) => `
+                      <tr>
+                        <td class="border border-gray-400 px-4 py-2">${item.antecedents}</td>
+                        <td class="border border-gray-400 px-4 py-2">${item.consequents}</td>
+                        <td class="border border-gray-400 px-4 py-2">${item.support}</td>
+                        <td class="border border-gray-400 px-4 py-2">${item.confidence}</td>
+                        <td class="border border-gray-400 px-4 py-2">${item.lift}</td>
+                      </tr>
+                    `
+                  )
+                  .join("")}
+              </tbody>
+            </table>
+          `;
+          resultsContainer.innerHTML = tableHtml;
+        } else {
+          resultsContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function displayRecomResult(recoms) {
+        const recomContainer = document.getElementById("recommendations");
+        if (Array.isArray(recoms) && recoms.length > 0) {
+          const recommendationsHtml = `
+                <h3 class="text-lg font-semibold mt-4">Recommendation Product:</h3>
+                <ul class="list-decimal pl-6">
+                ${recoms.map((rec) => `<li>${rec}</li>`).join("")}
+                </ul>
+            `;
+          recomContainer.innerHTML = recommendationsHtml;
+        } else {
+          recomContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function displayVisualization(imageUrl) {
+        const visualizationsContainer =
+          document.getElementById("visualizations");
+        if (imageUrl) {
+          const chartHtml = `
+            <div class="border border-gray-300 rounded p-2">
+                <img src="${imageUrl}" alt="Visualization" class="w-full">
+            </div>
+            `;
+          visualizationsContainer.innerHTML += chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+
+      function trainNaiveBayes(data) {
+        const classificationContainer =
+          document.getElementById("trainNBResults");
+        const classificationReport = data.classification_report;
+        const confusionMatrixPath = data.confusion_matrix_plot;
+
+        if (classificationReport && confusionMatrixPath) {
+          const accuracy = classificationReport.accuracy
+            ? classificationReport.accuracy.toFixed(2)
+            : "N/A";
+          const accuracyHtml = `
+      <h3 class="text-lg font-semibold mt-4">Model Accuracy:</h3>
+      <p class="text-blue-600 text-xl font-bold">${(accuracy * 100).toFixed(
+        2
+      )}%</p>
+    `;
+          let reportHtml = `
+      <h3 class="text-lg font-semibold mt-4">Classification Report:</h3>
+      <table class="table-auto border-collapse border border-gray-300 w-full text-sm mt-4">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border border-gray-300 px-4 py-2">Class</th>
+            <th class="border border-gray-300 px-4 py-2">Precision</th>
+            <th class="border border-gray-300 px-4 py-2">Recall</th>
+            <th class="border border-gray-300 px-4 py-2">F1-Score</th>
+            <th class="border border-gray-300 px-4 py-2">Support</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+          for (const [key, value] of Object.entries(classificationReport)) {
+            if (typeof value === "object") {
+              reportHtml += `
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">${key}</td>
+            <td class="border border-gray-300 px-4 py-2">${value.precision.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-300 px-4 py-2">${value.recall.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-300 px-4 py-2">${value[
+              "f1-score"
+            ].toFixed(2)}</td>
+            <td class="border border-gray-300 px-4 py-2">${value.support}</td>
+          </tr>
+        `;
+            }
+          }
+
+          reportHtml += `
+        </tbody>
+      </table>
+    `;
+          const matrixHtml = `
+      <h3 class="text-lg font-semibold mt-4">Confusion Matrix:</h3>
+      <div class="border border-gray-300 rounded p-2 mt-4">
+        <img src="${confusionMatrixPath}" alt="Confusion Matrix" class="w-full">
+      </div>
+    `;
+          classificationContainer.innerHTML =
+            accuracyHtml + reportHtml + matrixHtml;
+        } else {
+          classificationContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function trainKNN(data) {
+        const classificationContainer =
+          document.getElementById("trainKNNResults");
+        const classificationReport = data.classification_report;
+        const confusionMatrixPath = data.confusion_matrix_plot;
+
+        if (classificationReport && confusionMatrixPath) {
+          const accuracy = classificationReport.accuracy
+            ? classificationReport.accuracy.toFixed(2)
+            : "N/A";
+          const accuracyHtml = `
+      <h3 class="text-lg font-semibold mt-4">Model Accuracy:</h3>
+      <p class="text-blue-600 text-xl font-bold">${(accuracy * 100).toFixed(
+        2
+      )}%</p>
+    `;
+          let reportHtml = `
+      <h3 class="text-lg font-semibold mt-4">Classification Report:</h3>
+      <table class="table-auto border-collapse border border-gray-300 w-full text-sm mt-4">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border border-gray-300 px-4 py-2">Class</th>
+            <th class="border border-gray-300 px-4 py-2">Precision</th>
+            <th class="border border-gray-300 px-4 py-2">Recall</th>
+            <th class="border border-gray-300 px-4 py-2">F1-Score</th>
+            <th class="border border-gray-300 px-4 py-2">Support</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+          for (const [key, value] of Object.entries(classificationReport)) {
+            if (typeof value === "object") {
+              reportHtml += `
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">${key}</td>
+            <td class="border border-gray-300 px-4 py-2">${value.precision.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-300 px-4 py-2">${value.recall.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-300 px-4 py-2">${value[
+              "f1-score"
+            ].toFixed(2)}</td>
+            <td class="border border-gray-300 px-4 py-2">${value.support}</td>
+          </tr>
+        `;
+            }
+          }
+
+          reportHtml += `
+        </tbody>
+      </table>
+    `;
+          const matrixHtml = `
+      <h3 class="text-lg font-semibold mt-4">Confusion Matrix:</h3>
+      <div class="border border-gray-300 rounded p-2 mt-4">
+        <img src="${confusionMatrixPath}" alt="Confusion Matrix" class="w-full">
+      </div>
+    `;
+          classificationContainer.innerHTML =
+            accuracyHtml + reportHtml + matrixHtml;
+        } else {
+          classificationContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function displayClusterResults(clusters) {
+        const resultsContainer = document.getElementById("clusterDataResults");
+
+        if (Array.isArray(clusters) && clusters.length > 0) {
+          const tableHtml = `
+      <table class="table-auto w-full border-collapse border border-gray-400">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border border-gray-400 px-4 py-2">Cluster</th>
+            <th class="border border-gray-400 px-4 py-2">Country Code</th>
+            <th class="border border-gray-400 px-4 py-2">Customer ID</th>
+            <th class="border border-gray-400 px-4 py-2">Total Transaction</th>
+            <th class="border border-gray-400 px-4 py-2">Month Count</th>
+            <th class="border border-gray-400 px-4 py-2">Most Active Day</th>
+            <th class="border border-gray-400 px-4 py-2">Most Active Hour</th>
+            <th class="border border-gray-400 px-4 py-2">Total Purchase</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${clusters
+            .map(
+              (item) => `
+                <tr>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item.Cluster
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item.Country_Code
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item["Customer ID"]
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item.JumlahTransaksi
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item.MonthCount
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item.MostActiveDay
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item.MostActiveHour
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.TotalPurchase.toFixed(
+                    2
+                  )}</td>
+                </tr>
+              `
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+          resultsContainer.innerHTML = tableHtml;
+        } else {
+          resultsContainer.innerHTML =
+            "<p class='text-gray-500'>No clustering results to display.</p>";
+        }
+      }
+
+      function displayOptimalClusterResults(imageUrl) {
+        const visualizationsContainer = document.getElementById(
+          "optimalClusterResults"
+        );
+        if (imageUrl) {
+          const chartHtml = `
+            <div class="border border-gray-300 rounded p-2">
+                <img src="${imageUrl}" alt="Visualization" class="w-full">
+            </div>
+            `;
+          visualizationsContainer.innerHTML += chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+
+      function displayAnalyzation(imageUrl) {
+        const visualizationsContainer = document.getElementById("analyzations");
+        if (imageUrl) {
+          const chartHtml = `
+            <div class="border border-gray-300 rounded p-2">
+                <img src="${imageUrl}" alt="Visualization" class="w-full">
+            </div>
+            `;
+          visualizationsContainer.innerHTML += chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+
+      function displayClusterAnalysis(data) {
+        const resultsContainer = document.getElementById(
+          "clusterAnalysisResults"
+        );
+
+        if (data && Array.isArray(data.analysis) && data.analysis.length > 0) {
+          const tableHtml = `
+      <h3 class="text-lg font-semibold mt-4">Cluster Analysis:</h3>
+      <table class="table-auto w-full border-collapse border border-gray-400 mt-2">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border border-gray-400 px-4 py-2">Cluster</th>
+            <th class="border border-gray-400 px-4 py-2">Country Code (Avg)</th>
+            <th class="border border-gray-400 px-4 py-2">Jumlah Transaksi (Avg)</th>
+            <th class="border border-gray-400 px-4 py-2">Month Count (Avg)</th>
+            <th class="border border-gray-400 px-4 py-2">Most Active Day (Avg)</th>
+            <th class="border border-gray-400 px-4 py-2">Most Active Hour (Avg)</th>
+            <th class="border border-gray-400 px-4 py-2">Total Purchase (Avg)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.analysis
+            .map(
+              (item) => `
+                <tr>
+                  <td class="border border-gray-400 px-4 py-2">${
+                    item.Cluster
+                  }</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.Country_Code.toFixed(
+                    2
+                  )}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.JumlahTransaksi.toFixed(
+                    2
+                  )}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.MonthCount.toFixed(
+                    2
+                  )}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.MostActiveDay.toFixed(
+                    2
+                  )}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.MostActiveHour.toFixed(
+                    2
+                  )}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.TotalPurchase.toFixed(
+                    2
+                  )}</td>
+                </tr>
+              `
+            )
+            .join("")}
+        </tbody>
+      </table>
+      <p class="text-green-500 mt-2">${data.message}</p>
+    `;
+          resultsContainer.innerHTML = tableHtml;
+        } else {
+          resultsContainer.innerHTML = `
+      <p class="text-red-500">No cluster analysis data available.</p>
+    `;
+        }
+      }
+
+      function visualizeCluster(imageUrl) {
+        const visualizationsContainer =
+          document.getElementById("visualizeClusters");
+        if (imageUrl) {
+          const chartHtml = `
+            <div class="border border-gray-300 rounded p-2">
+                <img src="${imageUrl}" alt="Visualization" class="w-full">
+            </div>
+            `;
+          visualizationsContainer.innerHTML += chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+
+      document.getElementById("loadButton").addEventListener("click", () => {
+        const filePath = document.getElementById("filePath").value;
+        if (!filePath)
+          return Swal.fire("Error", "Please enter a file path.", "error");
+        handleApiRequest(
+          "/load",
+          "POST",
+          { file_path: filePath },
+          "Loading dataset..."
+        );
+      });
+
+      document
+        .getElementById("preprocessButton")
+        .addEventListener("click", () => {
+          handleApiRequest(
+            "/preprocess",
+            "POST",
+            null,
+            "Preprocessing data..."
+          );
+        });
+
+      document.getElementById("aprioriButton").addEventListener("click", () => {
+        const minSupport =
+          parseFloat(document.getElementById("minSupport").value) || 0.015;
+        handleApiRequest(
+          "/apriori",
+          "POST",
+          { min_support: minSupport },
+          "Running Apriori analysis..."
+        );
+      });
+
+      document
+        .getElementById("recommendButton")
+        .addEventListener("click", () => {
+          const productsInput = document
+            .getElementById("products")
+            .value.trim();
+          if (!productsInput) {
+            return Swal.fire(
+              "Error",
+              "Please enter at least one product.",
+              "error"
+            );
+          }
+          const products = productsInput
+            .split(",")
+            .map((p) => p.trim())
+            .filter((p) => p);
+          if (!products.length) {
+            return Swal.fire(
+              "Error",
+              "Please enter valid product names.",
+              "error"
+            );
+          }
+          handleApiRequest(
+            "/recommend",
+            "POST",
+            { products },
+            "Fetching recommendations..."
+          );
+        });
+
+      document
+        .getElementById("visualizeButton")
+        .addEventListener("click", () => {
+          const chartType = document.getElementById("chartType").value;
+          if (!chartType)
+            return Swal.fire("Error", "Please enter a chart type.", "error");
+          handleApiRequest(
+            `/visualize/${chartType}`,
+            "GET",
+            null,
+            "Generating visualization..."
+          );
+        });
+
+      document.getElementById("trainNBButton").addEventListener("click", () => {
+        handleApiRequest(
+          "/train/naive_bayes",
+          "GET",
+          null,
+          "Training Naive Bayes..."
+        );
+      });
+
+      document
+        .getElementById("trainKNNButton")
+        .addEventListener("click", () => {
+          const n_neighbors =
+            parseFloat(document.getElementById("nNeighbors").value) || 5;
+          handleApiRequest(
+            "/train/knn",
+            "POST",
+            { n_neighbors: n_neighbors },
+            "Training KNN..."
+          );
+        });
+
+      document
+        .getElementById("clusterDataButton")
+        .addEventListener("click", () => {
+          const n_cluster =
+            parseFloat(document.getElementById("nCluster").value) || 3;
+          handleApiRequest(
+            "/cluster",
+            "POST",
+            { n_cluster: n_cluster },
+            "Clustering Data..."
+          );
+        });
+
+      document
+        .getElementById("optimalClusterButton")
+        .addEventListener("click", () => {
+          const kRangeInput = document
+            .getElementById("kRangeInput")
+            .value.trim();
+          const k_range = kRangeInput
+            ? kRangeInput
+                .split(",")
+                .map((k) => parseInt(k.trim()))
+                .filter(Number.isInteger)
+            : undefined;
+
+          handleApiRequest(
+            "/optimal_clusters",
+            "POST",
+            { k_range: k_range },
+            "Finding Optimal Clusters..."
+          );
+        });
+
+      document.getElementById("analyzeButton").addEventListener("click", () => {
+        const analysisType = document.getElementById("analysisType").value;
+        if (!analysisType)
+          return Swal.fire("Error", "Please enter a analysis type.", "error");
+        handleApiRequest(
+          `/analyze/${analysisType}`,
+          "GET",
+          null,
+          "Generating analyzation..."
+        );
+      });
+
+      document.getElementById("clusterAnalysisButton").addEventListener("click", () => {
+        handleApiRequest(
+          '/cluster_analysis',
+          "GET",
+          null,
+          "Analyzing cluster..."
+        );
+      });
+
+      document.getElementById("visualizeClustersButton").addEventListener("click", () => {
+        handleApiRequest(
+          '/visualize_clusters',
+          "GET",
+          null,
+          "Analyzing cluster..."
+        );
+      });
+    </script>
+  </body>
+</html>
