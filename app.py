@@ -283,6 +283,16 @@ def day_analysis(customer_data, plot_path):
 
     plt.savefig(plot_path, bbox_inches='tight')
     plt.close()
+    
+def month_analysis(customer_data, plot_path):
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(data=customer_data, x='Cluster', y='MonthCount', palette='coolwarm')
+    plt.title('Distribusi Bulan Aktif per Cluster')
+    plt.xlabel('Cluster')
+    plt.ylabel('Jumlah Bulan Aktif')
+    
+    plt.savefig(plot_path, bbox_inches='tight')
+    plt.close()
 
 def country_analysis(customer_data, plot_path):
     """Generate country analysis visualization."""
@@ -589,6 +599,8 @@ def analyze(analysis_type):
             hour_analysis(customer_data, plot_path)
         elif analysis_type == 'day':
             day_analysis(customer_data, plot_path)
+        elif analysis_type == 'month':
+            month_analysis(customer_data, plot_path)
         elif analysis_type == 'country':
             country_analysis(customer_data, plot_path)
         else:
