@@ -1,6 +1,10 @@
-{% extends "dashboard.html" %} {% block title %}Cluster Analysis{%endblock%} {%
-block content %}
+{% extends "dashboard.html" %} 
+
+{% block title %}Cluster Analysis{%endblock%} 
+
+{% block content %}
 <div class="bg-white p-8 rounded shadow-md w-full max-w-3xl">
+  <h1 class="text-2xl font-bold mb-6">Cluster Analysis</h1>
   <!-- Optimal Cluster -->
   <div class="mb-6">
     <h2 class="text-xl font-semibold mb-2">Optimal Cluster</h2>
@@ -43,7 +47,7 @@ block content %}
     <input
       type="text"
       id="analysisType"
-      placeholder="Enter analysis type (hour/day/country)"
+      placeholder="Enter analysis type (hour/day/month)"
       class="w-full p-2 border border-gray-300 rounded mb-2"
     />
     <button
@@ -79,7 +83,9 @@ block content %}
     <div id="visualizeClusters" class="mt-4"></div>
   </div>
 </div>
-{%endblock%} {% block script %}
+{%endblock%} 
+
+{% block script %}
 <script>
   document.getElementById("clusterDataButton").addEventListener("click", () => {
     const n_cluster =

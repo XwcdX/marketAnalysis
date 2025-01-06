@@ -1,5 +1,8 @@
-{% extends "dashboard.html" %} {% block title %}Load & Preprocess
-Data{%endblock%} {% block content %}
+{% extends "dashboard.html" %} 
+
+{% block title %}Load & Preprocess Data{%endblock%} 
+
+{% block content %}
 <div class="bg-white p-8 rounded shadow-md w-full max-w-3xl">
   <h1 class="text-2xl font-bold mb-6">Load & Preprocess</h1>
 
@@ -49,7 +52,9 @@ Data{%endblock%} {% block content %}
     <div id="visualizations" class="mt-4 grid grid-cols-1 gap-4"></div>
   </div>
 </div>
-{% endblock %} {% block script %}
+{% endblock %} 
+
+{% block script %}
 <script>
   document.getElementById("loadButton").addEventListener("click", () => {
     const filePath = document.getElementById("filePath").value;

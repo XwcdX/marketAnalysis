@@ -1,6 +1,10 @@
-{% extends "dashboard.html" %} {% block title %}Apriori Analysis{%endblock%} {%
-block content %}
+{% extends "dashboard.html" %} 
+
+{% block title %}Apriori Analysis{%endblock%} 
+
+{% block content %}
 <div class="bg-white p-8 rounded shadow-md w-full max-w-3xl">
+  <h1 class="text-2xl font-bold mb-6">Apriori Analysis</h1>
   <!-- Apriori Analysis -->
   <div class="mb-6">
     <h2 class="text-xl font-semibold mb-2">Apriori Analysis</h2>
@@ -37,7 +41,9 @@ block content %}
     <div id="recommendations" class="mt-4"></div>
   </div>
 </div>
-{%endblock%} {% block script %}
+{%endblock%} 
+
+{% block script %}
 <script>
   document.getElementById("aprioriButton").addEventListener("click", () => {
     const minSupport =

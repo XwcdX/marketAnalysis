@@ -695,27 +695,22 @@ def get_cluster_centers():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-# Route for Dashboard (Home)
 @app.route('/')
 def dashboard():
     return render_template('dashboard.html')
 
-# Route for Load & Preprocess Data
 @app.route('/loadnPreprocess')
 def load_data():
     return render_template('load.html')
 
-# Route for Train Model
 @app.route('/trainModel')
 def train_model():
     return render_template('train.html')
 
-# Route for Apriori Analysis
 @app.route('/aprioriAnalysis')
 def aprioriAnalysis():
     return render_template('apriori.html')
 
-# Route for Cluster Analysis
 @app.route('/clusterAnalysis')
 def clusterAnalysis():
     return render_template('cluster.html')
