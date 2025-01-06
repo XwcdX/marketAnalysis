@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import pandas as pd
 import logging
@@ -20,7 +20,7 @@ import uuid
 app = Flask(__name__)
 CORS(app)
 
-TEMP_FOLDER = os.path.join(app.root_path, 'tmp')
+TEMP_FOLDER = os.path.join('static', 'tmp')
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
 # Preprocess data function
@@ -694,6 +694,31 @@ def get_cluster_centers():
         return jsonify({"cluster_centers": centers}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+# Route for Dashboard (Home)
+@app.route('/')
+def dashboard():
+    return render_template('dashboard.html')
+
+# Route for Load & Preprocess Data
+@app.route('/loadnPreprocess')
+def load_data():
+    return render_template('load.html')
+
+# Route for Train Model
+@app.route('/trainModel')
+def train_model():
+    return render_template('train.html')
+
+# Route for Apriori Analysis
+@app.route('/aprioriAnalysis')
+def aprioriAnalysis():
+    return render_template('apriori.html')
+
+# Route for Cluster Analysis
+@app.route('/clusterAnalysis')
+def clusterAnalysis():
+    return render_template('cluster.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

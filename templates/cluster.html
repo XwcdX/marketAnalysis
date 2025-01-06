@@ -1,0 +1,148 @@
+{% extends "dashboard.html" %} {% block title %}Cluster Analysis{%endblock%} {%
+block content %}
+<div class="bg-white p-8 rounded shadow-md w-full max-w-3xl">
+  <!-- Optimal Cluster -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Optimal Cluster</h2>
+    <input
+      type="text"
+      id="kRangeInput"
+      placeholder="Enter k_range (default: 2 - 9)"
+      class="w-full p-2 border border-gray-300 rounded mb-2"
+    />
+    <button
+      id="optimalClusterButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Find Optimal Clusters
+    </button>
+    <div id="optimalClusterResults" class="mt-4"></div>
+  </div>
+
+  <!-- Cluster Data -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Cluster Data</h2>
+    <input
+      type="number"
+      id="nCluster"
+      placeholder="Enter number of cluster (default: 3)"
+      class="w-full p-2 border border-gray-300 rounded mb-2"
+    />
+    <button
+      id="clusterDataButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Cluster Data
+    </button>
+    <div id="clusterDataResults" class="mt-4 max-h-72 overflow-auto"></div>
+  </div>
+
+  <!-- Analysis -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Analysis</h2>
+    <input
+      type="text"
+      id="analysisType"
+      placeholder="Enter analysis type (hour/day/country)"
+      class="w-full p-2 border border-gray-300 rounded mb-2"
+    />
+    <button
+      id="analyzeButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Analyze Data
+    </button>
+    <div id="analyzations" class="mt-4 grid grid-cols-1 gap-4"></div>
+  </div>
+
+  <!-- Cluster Analysis -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Cluster Analysis</h2>
+    <button
+      id="clusterAnalysisButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Perform Cluster Analysis
+    </button>
+    <div id="clusterAnalysisResults" class="mt-4"></div>
+  </div>
+
+  <!-- Cluster Visualization -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Cluster Visualization</h2>
+    <button
+      id="visualizeClustersButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Visualize Clusters
+    </button>
+    <div id="visualizeClusters" class="mt-4"></div>
+  </div>
+</div>
+{%endblock%} {% block script %}
+<script>
+  document.getElementById("clusterDataButton").addEventListener("click", () => {
+    const n_cluster =
+      parseFloat(document.getElementById("nCluster").value) || 3;
+    handleApiRequest(
+      "/cluster",
+      "POST",
+      { n_cluster: n_cluster },
+      "Clustering Data..."
+    );
+  });
+
+  document
+    .getElementById("optimalClusterButton")
+    .addEventListener("click", () => {
+      const kRangeInput = document.getElementById("kRangeInput").value.trim();
+      const k_range = kRangeInput
+        ? kRangeInput
+            .split(",")
+            .map((k) => parseInt(k.trim()))
+            .filter(Number.isInteger)
+        : undefined;
+
+      handleApiRequest(
+        "/optimal_clusters",
+        "POST",
+        { k_range: k_range },
+        "Finding Optimal Clusters..."
+      );
+    });
+
+  document.getElementById("analyzeButton").addEventListener("click", () => {
+    const analysisType = document.getElementById("analysisType").value;
+    if (!analysisType)
+      return Swal.fire("Error", "Please enter a analysis type.", "error");
+    handleApiRequest(
+      `/analyze/${analysisType}`,
+      "GET",
+      null,
+      "Generating analyzation..."
+    );
+  });
+
+  document
+    .getElementById("clusterAnalysisButton")
+    .addEventListener("click", () => {
+      handleApiRequest(
+        "/cluster_analysis",
+        "GET",
+        null,
+        "Analyzing cluster..."
+      );
+    });
+
+  document
+    .getElementById("visualizeClustersButton")
+    .addEventListener("click", () => {
+      handleApiRequest(
+        "/visualize_clusters",
+        "GET",
+        null,
+        "Analyzing cluster..."
+      );
+    });
+</script>
+{%endblock%}

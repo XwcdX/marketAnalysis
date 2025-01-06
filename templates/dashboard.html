@@ -1,0 +1,474 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 font-sans flex min-h-screen">
+    <aside class="w-64 bg-blue-900 text-white flex flex-col fixed top-0 h-screen">
+      <div class="p-4 text-center font-bold text-xl border-b border-blue-700">
+        Dashboard
+      </div>
+      <nav class="flex-grow">
+        <a
+          href="{{ url_for('load_data') }}"
+          class="block py-2 px-4 hover:bg-blue-800"
+          >Load & Preprocess Data</a
+        >
+        <a
+          href="{{ url_for('train_model') }}"
+          class="block py-2 px-4 hover:bg-blue-800"
+          >Train Model</a
+        >
+        <a
+          href="{{ url_for('aprioriAnalysis') }}"
+          class="block py-2 px-4 hover:bg-blue-800"
+          >Apriori Analysis</a
+        >
+        <a
+          href="{{ url_for('clusterAnalysis') }}"
+          class="block py-2 px-4 hover:bg-blue-800"
+          >Cluster Analysis</a
+        >
+      </nav>
+      <div class="p-4 text-center text-sm border-t border-blue-700">
+        &copy; 2025 Kelompok 11 Data Mining
+      </div>
+    </aside>
+
+    <main class="w-full flex justify-center p-6 bg-gray-100">
+      {% block content %}{% endblock %}
+    </main>
+
+    <script>
+      const apiUrl = "http://localhost:5000";
+
+      async function handleApiRequest(
+        route,
+        method = "GET",
+        body = null,
+        loaderMessage = "Processing..."
+      ) {
+        Swal.fire({
+          title: loaderMessage,
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        try {
+          const response = await fetch(`${apiUrl}${route}`, {
+            method,
+            headers: { "Content-Type": "application/json" },
+            body: body ? JSON.stringify(body) : null,
+          });
+
+          const data = await response.json();
+          if (!response.ok)
+            throw new Error(data.error || "Unknown error occurred.");
+
+          Swal.close();
+
+          if (route === "/apriori") {
+            displayAprioriResults(data.results);
+          } else if (route === "/recommend") {
+            displayRecomResult(data.recommendations);
+          } else if (route.startsWith("/visualize/")) {
+            displayVisualization(data.image_url);
+          } else if (route === "/train/naive_bayes") {
+            trainNaiveBayes(data);
+          } else if (route === "/train/knn") {
+            trainKNN(data);
+          } else if (route === "/cluster") {
+            displayClusterResults(data.clusters);
+          } else if (route === "/optimal_clusters") {
+            displayOptimalClusterResults(data.image_url);
+          } else if (route.startsWith("/analyze/")) {
+            displayAnalyzation(data.image_url);
+          } else if (route === "/cluster_analysis") {
+            displayClusterAnalysis(data);
+          } else if (route === "/visualize_clusters") {
+            visualizeCluster(data.image_url);
+          } else {
+            Swal.fire(
+              "Success",
+              data.message || JSON.stringify(data),
+              "success"
+            );
+          }
+        } catch (error) {
+          Swal.fire("Error", error.message, "error");
+        }
+      }
+
+      function displayAprioriResults(results) {
+        const resultsContainer = document.getElementById("aprioriResults");
+        if (Array.isArray(results) && results.length > 0) {
+          const tableHtml = `
+      <table class="table-auto w-full border-collapse border border-gray-400">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border border-gray-400 px-4 py-2">Antecedents</th>
+            <th class="border border-gray-400 px-4 py-2">Consequents</th>
+            <th class="border border-gray-400 px-4 py-2">Support</th>
+            <th class="border border-gray-400 px-4 py-2">Confidence</th>
+            <th class="border border-gray-400 px-4 py-2">Lift</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${results
+            .map(
+              (item) => `
+                <tr>
+                  <td class="border border-gray-400 px-4 py-2">${item.antecedents}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.consequents}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.support}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.confidence}</td>
+                  <td class="border border-gray-400 px-4 py-2">${item.lift}</td>
+                </tr>
+              `
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+          resultsContainer.innerHTML = tableHtml;
+        } else {
+          resultsContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function displayRecomResult(recoms) {
+        const recomContainer = document.getElementById("recommendations");
+        if (Array.isArray(recoms) && recoms.length > 0) {
+          const recommendationsHtml = `
+          <h3 class="text-lg font-semibold mt-4">Recommendation Product:</h3>
+          <ul class="list-decimal pl-6">
+          ${recoms.map((rec) => `<li>${rec}</li>`).join("")}
+          </ul>
+      `;
+          recomContainer.innerHTML = recommendationsHtml;
+        } else {
+          recomContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function displayVisualization(imageUrl) {
+        const visualizationsContainer =
+          document.getElementById("visualizations");
+        if (imageUrl) {
+          const chartHtml = `
+      <div class="border border-gray-300 rounded p-2">
+          <img src="${imageUrl}" alt="Visualization" class="w-full">
+      </div>
+      `;
+          visualizationsContainer.innerHTML += chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+
+      function trainNaiveBayes(data) {
+        const classificationContainer =
+          document.getElementById("trainNBResults");
+        const classificationReport = data.classification_report;
+        const confusionMatrixPath = data.confusion_matrix_plot;
+
+        if (classificationReport && confusionMatrixPath) {
+          const accuracy = classificationReport.accuracy
+            ? classificationReport.accuracy.toFixed(2)
+            : "N/A";
+          const accuracyHtml = `
+<h3 class="text-lg font-semibold mt-4">Model Accuracy:</h3>
+<p class="text-blue-600 text-xl font-bold">${(accuracy * 100).toFixed(2)}%</p>
+`;
+          let reportHtml = `
+<h3 class="text-lg font-semibold mt-4">Classification Report:</h3>
+<table class="table-auto border-collapse border border-gray-300 w-full text-sm mt-4">
+  <thead>
+    <tr class="bg-gray-200">
+      <th class="border border-gray-300 px-4 py-2">Class</th>
+      <th class="border border-gray-300 px-4 py-2">Precision</th>
+      <th class="border border-gray-300 px-4 py-2">Recall</th>
+      <th class="border border-gray-300 px-4 py-2">F1-Score</th>
+      <th class="border border-gray-300 px-4 py-2">Support</th>
+    </tr>
+  </thead>
+  <tbody>
+`;
+
+          for (const [key, value] of Object.entries(classificationReport)) {
+            if (typeof value === "object") {
+              reportHtml += `
+    <tr>
+      <td class="border border-gray-300 px-4 py-2">${key}</td>
+      <td class="border border-gray-300 px-4 py-2">${value.precision.toFixed(
+        2
+      )}</td>
+      <td class="border border-gray-300 px-4 py-2">${value.recall.toFixed(
+        2
+      )}</td>
+      <td class="border border-gray-300 px-4 py-2">${value["f1-score"].toFixed(
+        2
+      )}</td>
+      <td class="border border-gray-300 px-4 py-2">${value.support}</td>
+    </tr>
+  `;
+            }
+          }
+
+          reportHtml += `
+  </tbody>
+</table>
+`;
+          const matrixHtml = `
+<h3 class="text-lg font-semibold mt-4">Confusion Matrix:</h3>
+<div class="border border-gray-300 rounded p-2 mt-4">
+  <img src="${confusionMatrixPath}" alt="Confusion Matrix" class="w-full">
+</div>
+`;
+          classificationContainer.innerHTML =
+            accuracyHtml + reportHtml + matrixHtml;
+        } else {
+          classificationContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function trainKNN(data) {
+        const classificationContainer =
+          document.getElementById("trainKNNResults");
+        const classificationReport = data.classification_report;
+        const confusionMatrixPath = data.confusion_matrix_plot;
+
+        if (classificationReport && confusionMatrixPath) {
+          const accuracy = classificationReport.accuracy
+            ? classificationReport.accuracy.toFixed(2)
+            : "N/A";
+          const accuracyHtml = `
+<h3 class="text-lg font-semibold mt-4">Model Accuracy:</h3>
+<p class="text-blue-600 text-xl font-bold">${(accuracy * 100).toFixed(2)}%</p>
+`;
+          let reportHtml = `
+<h3 class="text-lg font-semibold mt-4">Classification Report:</h3>
+<table class="table-auto border-collapse border border-gray-300 w-full text-sm mt-4">
+  <thead>
+    <tr class="bg-gray-200">
+      <th class="border border-gray-300 px-4 py-2">Class</th>
+      <th class="border border-gray-300 px-4 py-2">Precision</th>
+      <th class="border border-gray-300 px-4 py-2">Recall</th>
+      <th class="border border-gray-300 px-4 py-2">F1-Score</th>
+      <th class="border border-gray-300 px-4 py-2">Support</th>
+    </tr>
+  </thead>
+  <tbody>
+`;
+
+          for (const [key, value] of Object.entries(classificationReport)) {
+            if (typeof value === "object") {
+              reportHtml += `
+    <tr>
+      <td class="border border-gray-300 px-4 py-2">${key}</td>
+      <td class="border border-gray-300 px-4 py-2">${value.precision.toFixed(
+        2
+      )}</td>
+      <td class="border border-gray-300 px-4 py-2">${value.recall.toFixed(
+        2
+      )}</td>
+      <td class="border border-gray-300 px-4 py-2">${value["f1-score"].toFixed(
+        2
+      )}</td>
+      <td class="border border-gray-300 px-4 py-2">${value.support}</td>
+    </tr>
+  `;
+            }
+          }
+
+          reportHtml += `
+  </tbody>
+</table>
+`;
+          const matrixHtml = `
+<h3 class="text-lg font-semibold mt-4">Confusion Matrix:</h3>
+<div class="border border-gray-300 rounded p-2 mt-4">
+  <img src="${confusionMatrixPath}" alt="Confusion Matrix" class="w-full">
+</div>
+`;
+          classificationContainer.innerHTML =
+            accuracyHtml + reportHtml + matrixHtml;
+        } else {
+          classificationContainer.innerHTML =
+            "<p class='text-gray-500'>No results to display.</p>";
+        }
+      }
+
+      function displayClusterResults(clusters) {
+        const resultsContainer = document.getElementById("clusterDataResults");
+
+        if (Array.isArray(clusters) && clusters.length > 0) {
+          const tableHtml = `
+<table class="table-auto w-full border-collapse border border-gray-400">
+  <thead class="bg-gray-200">
+    <tr>
+      <th class="border border-gray-400 px-4 py-2">Cluster</th>
+      <th class="border border-gray-400 px-4 py-2">Country Code</th>
+      <th class="border border-gray-400 px-4 py-2">Customer ID</th>
+      <th class="border border-gray-400 px-4 py-2">Total Transaction</th>
+      <th class="border border-gray-400 px-4 py-2">Month Count</th>
+      <th class="border border-gray-400 px-4 py-2">Most Active Day</th>
+      <th class="border border-gray-400 px-4 py-2">Most Active Hour</th>
+      <th class="border border-gray-400 px-4 py-2">Total Purchase</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${clusters
+      .map(
+        (item) => `
+          <tr>
+            <td class="border border-gray-400 px-4 py-2">${item.Cluster}</td>
+            <td class="border border-gray-400 px-4 py-2">${
+              item.Country_Code
+            }</td>
+            <td class="border border-gray-400 px-4 py-2">${
+              item["Customer ID"]
+            }</td>
+            <td class="border border-gray-400 px-4 py-2">${
+              item.JumlahTransaksi
+            }</td>
+            <td class="border border-gray-400 px-4 py-2">${item.MonthCount}</td>
+            <td class="border border-gray-400 px-4 py-2">${
+              item.MostActiveDay
+            }</td>
+            <td class="border border-gray-400 px-4 py-2">${
+              item.MostActiveHour
+            }</td>
+            <td class="border border-gray-400 px-4 py-2">${item.TotalPurchase.toFixed(
+              2
+            )}</td>
+          </tr>
+        `
+      )
+      .join("")}
+  </tbody>
+</table>
+`;
+          resultsContainer.innerHTML = tableHtml;
+        } else {
+          resultsContainer.innerHTML =
+            "<p class='text-gray-500'>No clustering results to display.</p>";
+        }
+      }
+
+      function displayOptimalClusterResults(imageUrl) {
+        const visualizationsContainer = document.getElementById(
+          "optimalClusterResults"
+        );
+        if (imageUrl) {
+          const chartHtml = `
+      <div class="border border-gray-300 rounded p-2">
+          <img src="${imageUrl}" alt="Visualization" class="w-full">
+      </div>
+      `;
+          visualizationsContainer.innerHTML = chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+
+      function displayAnalyzation(imageUrl) {
+        const visualizationsContainer = document.getElementById("analyzations");
+        if (imageUrl) {
+          const chartHtml = `
+      <div class="border border-gray-300 rounded p-2">
+          <img src="${imageUrl}" alt="Visualization" class="w-full">
+      </div>
+      `;
+          visualizationsContainer.innerHTML += chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+
+      function displayClusterAnalysis(data) {
+        const resultsContainer = document.getElementById(
+          "clusterAnalysisResults"
+        );
+
+        if (data && Array.isArray(data.analysis) && data.analysis.length > 0) {
+          const tableHtml = `
+<h3 class="text-lg font-semibold mt-4">Cluster Analysis:</h3>
+<table class="table-auto w-full border-collapse border border-gray-400 mt-2">
+  <thead class="bg-gray-200">
+    <tr>
+      <th class="border border-gray-400 px-4 py-2">Cluster</th>
+      <th class="border border-gray-400 px-4 py-2">Country Code (Avg)</th>
+      <th class="border border-gray-400 px-4 py-2">Jumlah Transaksi (Avg)</th>
+      <th class="border border-gray-400 px-4 py-2">Month Count (Avg)</th>
+      <th class="border border-gray-400 px-4 py-2">Most Active Day (Avg)</th>
+      <th class="border border-gray-400 px-4 py-2">Most Active Hour (Avg)</th>
+      <th class="border border-gray-400 px-4 py-2">Total Purchase (Avg)</th>
+    </tr>
+  </thead>
+  <tbody>
+    ${data.analysis
+      .map(
+        (item) => `
+          <tr>
+            <td class="border border-gray-400 px-4 py-2">${item.Cluster}</td>
+            <td class="border border-gray-400 px-4 py-2">${item.Country_Code.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-400 px-4 py-2">${item.JumlahTransaksi.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-400 px-4 py-2">${item.MonthCount.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-400 px-4 py-2">${item.MostActiveDay.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-400 px-4 py-2">${item.MostActiveHour.toFixed(
+              2
+            )}</td>
+            <td class="border border-gray-400 px-4 py-2">${item.TotalPurchase.toFixed(
+              2
+            )}</td>
+          </tr>
+        `
+      )
+      .join("")}
+  </tbody>
+</table>
+<p class="text-green-500 mt-2">${data.message}</p>
+`;
+          resultsContainer.innerHTML = tableHtml;
+        } else {
+          resultsContainer.innerHTML = `
+<p class="text-red-500">No cluster analysis data available.</p>
+`;
+        }
+      }
+
+      function visualizeCluster(imageUrl) {
+        const visualizationsContainer =
+          document.getElementById("visualizeClusters");
+        if (imageUrl) {
+          const chartHtml = `
+      <div class="border border-gray-300 rounded p-2">
+          <img src="${imageUrl}" alt="Visualization" class="w-full">
+      </div>
+      `;
+          visualizationsContainer.innerHTML += chartHtml;
+        } else {
+          Swal.fire("Error", "Failed to generate the visualization.", "error");
+        }
+      }
+    </script>
+    {% block script %}{% endblock %}
+  </body>
+</html>

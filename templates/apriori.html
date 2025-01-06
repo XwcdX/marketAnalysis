@@ -1,0 +1,73 @@
+{% extends "dashboard.html" %} {% block title %}Apriori Analysis{%endblock%} {%
+block content %}
+<div class="bg-white p-8 rounded shadow-md w-full max-w-3xl">
+  <!-- Apriori Analysis -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Apriori Analysis</h2>
+    <input
+      type="number"
+      id="minSupport"
+      placeholder="Enter minimum support (default: 0.015)"
+      class="w-full p-2 border border-gray-300 rounded mb-2"
+    />
+    <button
+      id="aprioriButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Run Apriori Analysis
+    </button>
+    <div id="aprioriResults" class="mt-4"></div>
+  </div>
+
+  <!-- Recommend Products -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Recommend Products</h2>
+    <input
+      type="text"
+      id="products"
+      placeholder="Enter purchased products (comma-separated)"
+      class="w-full p-2 border border-gray-300 rounded mb-2"
+    />
+    <button
+      id="recommendButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Recommend Products
+    </button>
+    <div id="recommendations" class="mt-4"></div>
+  </div>
+</div>
+{%endblock%} {% block script %}
+<script>
+  document.getElementById("aprioriButton").addEventListener("click", () => {
+    const minSupport =
+      parseFloat(document.getElementById("minSupport").value) || 0.015;
+    handleApiRequest(
+      "/apriori",
+      "POST",
+      { min_support: minSupport },
+      "Running Apriori analysis..."
+    );
+  });
+
+  document.getElementById("recommendButton").addEventListener("click", () => {
+    const productsInput = document.getElementById("products").value.trim();
+    if (!productsInput) {
+      return Swal.fire("Error", "Please enter at least one product.", "error");
+    }
+    const products = productsInput
+      .split(",")
+      .map((p) => p.trim())
+      .filter((p) => p);
+    if (!products.length) {
+      return Swal.fire("Error", "Please enter valid product names.", "error");
+    }
+    handleApiRequest(
+      "/recommend",
+      "POST",
+      { products },
+      "Fetching recommendations..."
+    );
+  });
+</script>
+{%endblock%}

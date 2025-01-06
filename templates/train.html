@@ -1,0 +1,56 @@
+{% extends "dashboard.html" %} {% block title %}Train Model{%endblock%} {% block
+content %}
+<div class="bg-white p-8 rounded shadow-md w-full max-w-3xl">
+  <!-- Train Naive Bayes -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Train Naive Bayes</h2>
+    <button
+      id="trainNBButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Train Naive Bayes
+    </button>
+    <div id="trainNBResults" class="mt-4"></div>
+  </div>
+
+  <!-- Train KNN -->
+  <div class="mb-6">
+    <h2 class="text-xl font-semibold mb-2">Train KNN</h2>
+    <input
+      type="number"
+      id="nNeighbors"
+      placeholder="Enter number of neighbors (default: 5)"
+      class="w-full p-2 border border-gray-300 rounded mb-2"
+    />
+    <button
+      id="trainKNNButton"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+    >
+      Train KNN
+    </button>
+    <div id="trainKNNResults" class="mt-4"></div>
+  </div>
+</div>
+{%endblock%} {% block script %}
+<script>
+  document.getElementById("trainNBButton").addEventListener("click", () => {
+    handleApiRequest(
+      "/train/naive_bayes",
+      "GET",
+      null,
+      "Training Naive Bayes..."
+    );
+  });
+
+  document.getElementById("trainKNNButton").addEventListener("click", () => {
+    const n_neighbors =
+      parseFloat(document.getElementById("nNeighbors").value) || 5;
+    handleApiRequest(
+      "/train/knn",
+      "POST",
+      { n_neighbors: n_neighbors },
+      "Training KNN..."
+    );
+  });
+</script>
+{%endblock%}
