@@ -23,7 +23,6 @@ CORS(app)
 TEMP_FOLDER = os.path.join('static', 'tmp')
 os.makedirs(TEMP_FOLDER, exist_ok=True)
 
-# Preprocess data function
 def preprocess_data(data):
     """Preprocess the dataset."""
     if not isinstance(data, pd.DataFrame):
@@ -141,7 +140,6 @@ def visualize_hour(data, plot_path):
     plt.savefig(plot_path)
     plt.close()
 
-# Extract customer data for clustering
 def extract_customer_data(data):
     """Extract customer-level data for clustering."""
     required_columns = {'Customer ID', 'TotalPurchase', 'Invoice', 'Country_Code', 'Hour', 'DayOfWeek', 'Month'}
@@ -161,13 +159,12 @@ def extract_customer_data(data):
         customer_data.columns = ['Customer ID', 'TotalPurchase', 'JumlahTransaksi', 'Country_Code',
                                  'MostActiveHour', 'MostActiveDay', 'MonthCount']
 
-        # Map day names to numeric values
         day_mapping = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3,
                        'Friday': 4, 'Saturday': 5, 'Sunday': 6}
         customer_data['MostActiveDay'] = (
             customer_data['MostActiveDay']
             .map(day_mapping)
-            .fillna(0)  # Fallback for unmapped days
+            .fillna(0)
             .astype(int)
         )
 
@@ -178,7 +175,6 @@ def extract_customer_data(data):
         logging.error(f"Error during customer data extraction: {e}")
         raise
 
-# Scale features function
 def scale_features(data):
     """Scale features using StandardScaler."""
     if not isinstance(data, pd.DataFrame):
@@ -189,7 +185,6 @@ def scale_features(data):
     logging.info("Features scaled successfully.")
     return scaled_data
 
-# Find optimal clusters function using Elbow and Silhouette method
 def find_optimal_clusters(scaled_data, k_range):
     """Determine the optimal number of clusters using Elbow and Silhouette methods."""
     distortions = []
@@ -220,7 +215,6 @@ def find_optimal_clusters(scaled_data, k_range):
     plt.close()
     return plot_path
 
-# K-Means clustering function
 def cluster_customers(customer_data, scaled_data, n_clusters):
     """Apply K-Means clustering to the customer data."""
     kmeans = KMeans(n_clusters=n_clusters, random_state=42)
@@ -229,7 +223,6 @@ def cluster_customers(customer_data, scaled_data, n_clusters):
     logging.info(f"Clustering completed with {n_clusters} clusters.")
     return customer_data, kmeans
 
-# Visualize clusters function
 def visualize_clusters(customer_data):
     """Generate a scatter plot for customer clusters."""
     plt.figure(figsize=(10, 6))
@@ -310,14 +303,12 @@ def country_analysis(customer_data, plot_path):
     plt.savefig(plot_path, bbox_inches='tight')
     plt.close()
 
-# Prepare basket data for frequent itemset mining
 def prepare_basket_data(data):
     """Prepare transaction data for frequent itemset mining."""
     basket = data.groupby(['Invoice', 'Description'])['Quantity'].sum().unstack().fillna(0)
     basket = (basket > 0)
     return basket
 
-# Perform Apriori algorithm and generate association rules
 def perform_apriori(basket, min_support):
     """Perform Apriori analysis and generate association rules."""
     frequent_itemsets = apriori(basket, min_support=min_support, use_colnames=True)
@@ -330,8 +321,6 @@ def perform_apriori(basket, min_support):
     logging.info("Frequent itemset mining completed.")
     return filtered_rules
 
-
-# Train Naive Bayes classifier
 def train_naive_bayes(customer_data):
     """Train a Naive Bayes classifier for sentiment analysis."""
     required_columns = {'TotalPurchase', 'JumlahTransaksi'}
@@ -365,7 +354,6 @@ def train_naive_bayes(customer_data):
         "confusion_matrix_plot": plot_path
     }
 
-# Train K-Nearest Neighbors (KNN) classifier
 def train_knn(customer_data, n_neighbors=5):
     """Train a K-Nearest Neighbors classifier."""
     required_columns = {'TotalPurchase', 'JumlahTransaksi'}
@@ -397,7 +385,6 @@ def train_knn(customer_data, n_neighbors=5):
         "confusion_matrix_plot": plot_path
     }
 
-# Recommend products based on association rules
 def recommend_products(rules, purchased_products, product_mapping):
     """Generate product recommendations based on association rules."""
     if rules.empty:
@@ -410,7 +397,6 @@ def recommend_products(rules, purchased_products, product_mapping):
         for _, rule in matching_rules.iterrows():
             recommendations.update(rule['consequents'].split(', '))
 
-    # Exclude already purchased products
     filtered_recommendations = [
         product_mapping.get(product.strip(), product)
         for product in recommendations
@@ -420,8 +406,6 @@ def recommend_products(rules, purchased_products, product_mapping):
     logging.info(f"Generated {len(filtered_recommendations)} recommendations.")
     return {"recommendations": filtered_recommendations[:5]}
 
-
-# Global variables for dataset and processed data
 global_data = None
 customer_data = None
 rules = None
